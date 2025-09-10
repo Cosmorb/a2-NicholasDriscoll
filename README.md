@@ -69,7 +69,7 @@ Below are suggested technical and design achievements. You can use these to help
 - (5 points) In addition to a form enabling adding and deleting data on the server, also add the ability to modify existing data.
 
 *Design/UX*
-- (5 points per person, with a max of 10 points) Test your user interface with other students in the class. Define a specific task for them to complete (ideally something short that takes <10 minutes), and then use the [think-aloud protocol](https://en.wikipedia.org/wiki/Think_aloud_protocol) to obtain feedback on your design (talk-aloud is also fine). Important considerations when designing your study:
+- (5 points per person, with a max of 10 points) Test your user interface with others. Define a specific task for them to complete (ideally something short that takes <10 minutes), and then use the [think-aloud protocol](https://en.wikipedia.org/wiki/Think_aloud_protocol) to obtain feedback on your design (talk-aloud is also fine). Important considerations when designing your study:
 
 1. Make sure you start the study by clearly stating the task that you expect your user to accomplish.
 2. You shouldn't provide any verbal instructions on how to use your interface / accomplish the task you give them. Make sure that your interface is clear enough that users can figure it out without any instruction, or provide text instructions from within the interface itself. 
