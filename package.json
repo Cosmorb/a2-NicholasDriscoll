@@ -1,8 +1,8 @@
 {
-  "name": "",
-  "version": "",
-  "description": "",
-  "author": "",
+  "name": "NicholasDriscoll",
+  "version": "1",
+  "description": "CS4241 Assignment 2",
+  "author": "Nicholas Driscoll",
   "scripts": {
     "start": "node server.improved.js"
   },

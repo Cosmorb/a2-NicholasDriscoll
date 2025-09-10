@@ -6,6 +6,8 @@ const http = require( "http" ),
       // file.
       mime = require( "mime" ),
       dir  = "public/",
+    path = require("path"),
+    url = require("url"),
       port = 3000
 
 const appdata = [
