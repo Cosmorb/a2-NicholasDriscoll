@@ -6,71 +6,101 @@ const http = require( "http" ),
       // file.
       mime = require( "mime" ),
       dir  = "public/",
-    path = require("path"),
+         path = require("path"),
     url = require("url"),
       port = 3000
 
-const appdata = [
-  { "model": "toyota", "year": 1999, "mpg": 23 },
-  { "model": "honda", "year": 2004, "mpg": 30 },
-  { "model": "ford", "year": 1987, "mpg": 14} 
-]
+let items = [];
 
-const server = http.createServer( function( request,response ) {
-  if( request.method === "GET" ) {
-    handleGet( request, response )    
-  }else if( request.method === "POST" ){
-    handlePost( request, response ) 
-  }
-})
+// helpers funtiions
+const id  = () => "id-" + Math.random().toString(36).slice(2, 9);
+    const iso = () => new Date().toISOString();
+        const respondBy = (createdAt) =>
+            new Date(new Date(createdAt).getTime() + 3 * 86400000).toISOString();
 
-const handleGet = function( request, response ) {
-  const filename = dir + request.url.slice( 1 ) 
 
-  if( request.url === "/" ) {
-    sendFile( response, "public/index.html" )
-  }else{
-    sendFile( response, filename )
-  }
+// AI copilto did auto genrate contenetType after creating the first line, just wanted this noted, sorry
+const contentType = (file) => {
+    if (file.endsWith(".html")) return "text/html; charset=utf-8";
+    if (file.endsWith(".css"))  return "text/css; charset=utf-8";
+    if (file.endsWith(".js"))   return "application/javascript; charset=utf-8";
+    if (file.endsWith(".json")) return "application/json; charset=utf-8";
+    if (file.endsWith(".svg"))  return "image/svg+xml";
+    if (file.endsWith(".png"))  return "image/png";
+    if (file.endsWith(".jpg") || file.endsWith(".jpeg")) return "image/jpeg";
+    if (file.endsWith(".ico"))  return "image/x-icon";
+    return "text/plain; charset=utf-8";
+};
+
+// stole this from here, basiclay stops reqest password and other stuff
+function Blocker(urlPath) {
+    const p = urlPath === "/" ? "/index.html" : urlPath;
+    const abs = path.resolve(PUB, "." + p);
+    if (!abs.startsWith(PUB)) return null;
+    return abs;
 }
 
-const handlePost = function( request, response ) {
-  let dataString = ""
-
-  request.on( "data", function( data ) {
-      dataString += data 
-  })
-
-  request.on( "end", function() {
-    console.log( JSON.parse( dataString ) )
-
-    // ... do something with the data here!!!
-
-    response.writeHead( 200, "OK", {"Content-Type": "text/plain" })
-    response.end("test")
-  })
+// simple helpler for json bases from here : https://stackoverflow.com/questions/19696240/proper-way-to-return-json-using-node-or-express
+function send(res, code, body, headers = {}) {
+    res.writeHead(code, headers);
+    res.end(body);
 }
 
-const sendFile = function( response, filename ) {
-   const type = mime.getType( filename ) 
-
-   fs.readFile( filename, function( err, content ) {
-
-     // if the error = null, then we"ve loaded the file successfully
-     if( err === null ) {
-
-       // status code: https://httpstatuses.com
-       response.writeHeader( 200, { "Content-Type": type })
-       response.end( content )
-
-     }else{
-
-       // file not found, error code 404
-       response.writeHeader( 404 )
-       response.end( "404 Error: File Not Found" )
-
-     }
-   })
+function sendJSON(res, code, obj) {
+    send(res, code, JSON.stringify(obj), { "Content-Type": " application/json; charset=utf-8" });
 }
 
-server.listen( process.env.PORT || port )
+
+// THIS was created with the help of WEBSTORM AI,
+function readit(req) {
+    return new Promise((resolve) => {
+        let data = "";
+        req.on("data", (chunk) => (data += chunk));
+        req.on("end", () => resolve(data));
+    });
+}
+
+
+// Based off this, wbstom ai did help fill out https://stackoverflow.com/questions/49885609/http-createserver-onrequest-async-await-functions
+const server = http.createServer(async (req, res) => {
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    const pathName = url.pathname;
+
+// API, based of this : https://javascript.plainenglish.io/building-a-rest-api-with-vanilla-node-js-without-any-frameworks-25e9b46c9671
+    if (pathName === "/api/items" && req.method === "GET") {
+        return sendJSON(res, 200, items);
+    }
+
+    if (pathName === "/api/items" && req.method === "POST") {
+        const raw = await readit(req);
+        let data = {};
+        try { data = JSON.parse(raw || "{}"); } catch {}
+        const { name = "", email = "", message = "" } = data;
+            // verifies i f feild are filled
+        if (!name || !email || !message) {
+            return sendJSON(res, 400, { error: "YOU FORFOT A FIELD, FILL IT OUT" });
+        }
+//
+        const createdAt = iso();
+        const row = { id: id(), name, email, message, createdAt, respondBy: respondBy(createdAt) };
+        items.unshift(row);
+        return sendJSON(res, 201, row);
+    }
+
+    if (pathName.startsWith("/api/items/") && req.method === "DELETE") {
+        const rid = pathName.split("/").pop();
+        const nBefore = items.length;
+        items = items.filter((r) => r.id !== rid);
+        return sendJSON(res, 200, { removed: nBefore - items.length });
+    }
+// this was generater with the help of AI WEBSTIRM
+    const filePath = Blocker(pathName);
+    if (!filePath) return send(res, 403, "Forbidden");
+
+    fs.readFile(filePath, (err, buf) => {
+        if (err) return send(res, 404, "Not Found");
+        send(res, 200, buf, { "Content-Type": contentType(filePath) });
+    });
+});
+// starte the given post
+server.listen(PORT);
