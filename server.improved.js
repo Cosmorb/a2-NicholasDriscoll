@@ -1,23 +1,27 @@
-const http = require( "http" ),
-      fs   = require( "fs" ),
-      // IMPORTANT: you must run `npm install` in the directory for this assignment
-      // to install the mime library if you"re testing this on your local machine.
-      // However, Glitch will install it automatically by looking in your package.json
-      // file.
-      mime = require( "mime" ),
-      dir  = "public/",
-         path = require("path"),
-    url = require("url"),
-      port = 3000
+const http = require("http"),
+    fs   = require("fs"),
+    // IMPORTANT: you must run `npm install` in the directory for this assignment
+    // to install the mime library if you"re testing this on your local machine.
+    // However, Glitch will install it automatically by looking in your package.json
+    // file.
+    // mime = require("mime"), // (unused now)
+    // dir  = "public/",       // (unused now)
+    path = require("path"),
+    url  = require("url"),
+    port = 3000;
+
+// Use Render's port when deployed; 3000 locally.
+const PORT = process.env.PORT || port;
+// Absolute path to /public for safe static serving.
+const PUB  = path.resolve(__dirname, "public");
 
 let items = [];
 
 // helpers funtiions
 const id  = () => "id-" + Math.random().toString(36).slice(2, 9);
-    const iso = () => new Date().toISOString();
-        const respondBy = (createdAt) =>
-            new Date(new Date(createdAt).getTime() + 3 * 86400000).toISOString();
-
+const iso = () => new Date().toISOString();
+const respondBy = (createdAt) =>
+    new Date(new Date(createdAt).getTime() + 3 * 86400000).toISOString();
 
 // AI copilto did auto genrate contenetType after creating the first line, just wanted this noted, sorry
 const contentType = (file) => {
@@ -47,9 +51,9 @@ function send(res, code, body, headers = {}) {
 }
 
 function sendJSON(res, code, obj) {
-    send(res, code, JSON.stringify(obj), { "Content-Type": " application/json; charset=utf-8" });
+    // remove leading space in content type
+    send(res, code, JSON.stringify(obj), { "Content-Type": "application/json; charset=utf-8" });
 }
-
 
 // THIS was created with the help of WEBSTORM AI,
 function readit(req) {
@@ -60,13 +64,13 @@ function readit(req) {
     });
 }
 
-
 // Based off this, wbstom ai did help fill out https://stackoverflow.com/questions/49885609/http-createserver-onrequest-async-await-functions
 const server = http.createServer(async (req, res) => {
-    const url = new URL(req.url, `http://${req.headers.host}`);
-    const pathName = url.pathname;
+    // Avoid shadowing the imported 'url' module by using 'u'
+    const u = new URL(req.url, `http://${req.headers.host}`);
+    const pathName = u.pathname;
 
-// API, based of this : https://javascript.plainenglish.io/building-a-rest-api-with-vanilla-node-js-without-any-frameworks-25e9b46c9671
+    // API, based of this : https://javascript.plainenglish.io/building-a-rest-api-with-vanilla-node-js-without-any-frameworks-25e9b46c9671
     if (pathName === "/api/items" && req.method === "GET") {
         return sendJSON(res, 200, items);
     }
@@ -76,11 +80,11 @@ const server = http.createServer(async (req, res) => {
         let data = {};
         try { data = JSON.parse(raw || "{}"); } catch {}
         const { name = "", email = "", message = "" } = data;
-            // verifies i f feild are filled
+        // verifies i f feild are filled
         if (!name || !email || !message) {
             return sendJSON(res, 400, { error: "YOU FORFOT A FIELD, FILL IT OUT" });
         }
-//
+        //
         const createdAt = iso();
         const row = { id: id(), name, email, message, createdAt, respondBy: respondBy(createdAt) };
         items.unshift(row);
@@ -93,7 +97,8 @@ const server = http.createServer(async (req, res) => {
         items = items.filter((r) => r.id !== rid);
         return sendJSON(res, 200, { removed: nBefore - items.length });
     }
-// this was generater with the help of AI WEBSTIRM
+
+    // this was generater with the help of AI WEBSTIRM
     const filePath = Blocker(pathName);
     if (!filePath) return send(res, 403, "Forbidden");
 
@@ -102,5 +107,6 @@ const server = http.createServer(async (req, res) => {
         send(res, 200, buf, { "Content-Type": contentType(filePath) });
     });
 });
+
 // starte the given post
 server.listen(PORT);
