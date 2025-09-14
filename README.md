@@ -1,6 +1,6 @@
 Basic Requirements:
 
-I met all of the basic requirements by including both the server results and a foreman enters functionality in the server logic. The only part I don't think I completed was the derived field, as I wasn't sure what would fit within the needs of my application's design. Additionally, I had difficulty figuring out a way to generate a creation date to set a deadline based on priority, so I wasn't able to finish that. I also didn't want to just copy and paste from ChatGPT. However, I was able to create a website that I plan to use for future projects by setting up HTML pages that mainly connect to each other and display information I want future employers to see. Specifically, I created three pages: one for my contact information, one for the projects I want to showcase, and one for an about me section. While the contact page is mainly for this assignment, I believe the others serve as good introductions for future projects or assignments. I enjoy building my experience by expanding on what I've already done and modifying it, as I think that's the best way for me to learn. I completed almost all the deliverables as outlined in your readme, and you probably pulled this from the pull request to the original repo.
+I met all of the basic requirements by including both server results and a foreman enters functionality in the server logic. The only part I don't think I completed was the derived field, as I wasn't sure what would fit within the needs of my application's design. Additionally, I had difficulty figuring out a way to generate a creation date to set a deadline based on priority, so I wasn't able to finish that. I also didn't want to just copy and paste from ChatGPT. However, I was able to create a website that I plan to use for future projects by setting up HTML pages that mainly connect to each other and display information I want future employers to see. Specifically, I created three pages: one for my contact information, one for the projects I want to showcase, and one for an about me section. While the contact page is mainly for this assignment, I believe the others serve as good introductions for future projects or assignments. I enjoy building my experience by expanding on what I've already done and modifying it, as I think that's the best way for me to learn. I completed almost all the deliverables as outlined in your readme, and you probably pulled this from the pull request to the original repo.
 
 
 Technical Achievements:
@@ -11,8 +11,7 @@ For my CSS rules:
 Again, I based this heavily on my A1 assignment and transferred what I did there to this project. I actually like how the website looks, including what I incorporated into it, and I plan to update it over time, but I ended up removing that style.
 
 Design Achievements:
-I wasn't able to contact anyone to test it because I got very busy this week with other projects and MQP. Honestly, I just did not manage my time well for this assignment.
-
+I wasn't able to contact anyone to test it because I was very busy this week with other projects and MQP. Honestly, I just didn't manage my time well for this assignment. However, I was able to create a free single-page application that includes a center for my projects and a YouTube video link. It has one page dedicated entirely to me and who I am, and the other page serving as the service side where employers can log in and send a message like, 'Hi, if you're interested, blah, blah, blah,' with the ability to delete those messages.
 
 
 
