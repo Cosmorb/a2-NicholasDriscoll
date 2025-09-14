@@ -1,23 +1,23 @@
 async function loadInbox() {
 const tbody = document.querySelector("#items tbody");
-if (!tbody) return; // not on contact page
+if (!tbody) return;
 const res = await fetch("/api/items");
 const items = await res.json();
 tbody.innerHTML = items.map(r => `
-<!---->
+<!-- So AI did help after it saw what iwas trying to do-->
 <tr data-id="${r.id}">
       <td>${r.name}</td>
       <td>${r.email}</td>
       <td>${r.message}</td>
       <td>${new Date(r.createdAt).toLocaleString()}</td>
-      <td>${new Date(r.respondBy).toLocaleString()}</td>
       <td><button class="del">Delete</button></td>
+      
 </tr>
 `).join("");
 }
 
 
-<!---->
+<!--this function primarly was creatdd through the braisteomr AI, it saw what i was trying to do and corrected after i kept failing to wite it -->
 async function onSubmit(e) {
     e.preventDefault();
     const form = document.querySelector("#contact-form");
@@ -39,7 +39,7 @@ async function onSubmit(e) {
 async function onClick(e) {
     const btn = e.target.closest(".del");
     if (!btn) return;
-    <!---->
+    <!-- most of this was written by me but it autofil some line, and reanme a function it though tas better-->
     const id = e.target.closest("tr")?.dataset?.id;
     if (!id) return;
     await fetch(`/api/items/${id}`, { method: "DELETE" });

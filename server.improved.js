@@ -20,8 +20,6 @@ let items = [];
 // helpers funtiions
 const id  = () => "id-" + Math.random().toString(36).slice(2, 9);
 const iso = () => new Date().toISOString();
-const respondBy = (createdAt) =>
-    new Date(new Date(createdAt).getTime() + 3 * 86400000).toISOString();
 
 // AI copilto did auto genrate contenetType after creating the first line, just wanted this noted, sorry
 const contentType = (file) => {
@@ -86,7 +84,7 @@ const server = http.createServer(async (req, res) => {
         }
         //
         const createdAt = iso();
-        const row = { id: id(), name, email, message, createdAt, respondBy: respondBy(createdAt) };
+        const row = { id: id(), name, email, message, createdAt: iso() };
         items.unshift(row);
         return sendJSON(res, 201, row);
     }
