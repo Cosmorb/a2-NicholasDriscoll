@@ -1,31 +1,35 @@
+// loadInbox: Based off MDN Fetch API and table manipulation
+// https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
+// https://developer.mozilla.org/en-US/docs/Web/API/HTMLTableElement/insertRow
+// Also inspired by Stack Overflow: https://stackoverflow.com/a/54073196
 async function loadInbox() {
-const tbody = document.querySelector("#items tbody");
-if (!tbody) return;
-const res = await fetch("/api/items");
-const items = await res.json();
-tbody.innerHTML = items.map(r => `
-<!-- So AI did help after it saw what iwas trying to do-->
-<tr data-id="${r.id}">
-      <td>${r.name}</td>
-      <td>${r.email}</td>
-      <td>${r.message}</td>
-      <td>${new Date(r.createdAt).toLocaleString()}</td>
-      <td><button class="del">Delete</button></td>
-      
-</tr>
-`).join("");
+    const tbody = document.querySelector("#items tbody");
+    if (!tbody) return;
+    const res = await fetch("/api/items");
+    const items = await res.json();
+    tbody.innerHTML = items.map(r => `
+        <tr data-id="${r.id}">
+            <td>${r.name}</td>
+            <td>${r.email}</td>
+            <td>${r.message}</td>
+            <td>${new Date(r.createdAt).toLocaleString()}</td>
+            <td><button class="del">Delete</button></td>
+        </tr>
+    `).join("");
 }
 
-
-<!--this function primarly was creatdd through the braisteomr AI, it saw what i was trying to do and corrected after i kept failing to wite it -->
+// onSubmit: Based off MDN Fetch API and Form handling
+// https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
+// https://developer.mozilla.org/en-US/docs/Web/API/HTMLFormElement/submit_event
+// Also inspired by Stack Overflow: https://stackoverflow.com/a/42967469
 async function onSubmit(e) {
     e.preventDefault();
     const form = document.querySelector("#contact-form");
     if (!form) return;
     const body = JSON.stringify({
-        name:    document.querySelector("#name").value,
-        email:   document.querySelector("#email").value,
-        message: document.querySelector("#message").value
+        name: form.name.value,
+        email: form.email.value,
+        message: form.message.value
     });
     await fetch("/api/items", {
         method: "POST",
@@ -36,24 +40,26 @@ async function onSubmit(e) {
     loadInbox();
 }
 
+// onClick: Based off MDN Event Delegation and Fetch API
+// https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener
+// https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
+// Also inspired by Stack Overflow: https://stackoverflow.com/a/34896361
 async function onClick(e) {
     const btn = e.target.closest(".del");
     if (!btn) return;
-    <!-- most of this was written by me but it autofil some line, and reanme a function it though tas better-->
-    const id = e.target.closest("tr")?.dataset?.id;
+    const id = btn.closest("tr")?.dataset?.id;
     if (!id) return;
     await fetch(`/api/items/${id}`, { method: "DELETE" });
     loadInbox();
 }
 
+// DOMContentLoaded: Based off MDN DOMContentLoaded event
+// https://developer.mozilla.org/en-US/docs/Web/API/Document/DOMContentLoaded_event
+// Also inspired by Stack Overflow: https://stackoverflow.com/a/7999818
 document.addEventListener("DOMContentLoaded", () => {
     const form = document.querySelector("#contact-form");
-
     if (form) form.addEventListener("submit", onSubmit);
     const table = document.querySelector("#items");
-
     if (table) table.addEventListener("click", onClick);
-
     loadInbox();
-
 });
