@@ -119,6 +119,7 @@ const Server = http.createServer(async (req, res) => {
     items.push(row);
     return sendJSON(res, 201, row);
   }
+   
   if (pathname.startsWith("/api/items/") && req.method === "DELETE") {
     const rid = pathname.split("/").pop();
     const before = items.length;

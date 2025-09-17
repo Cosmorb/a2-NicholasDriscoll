@@ -6,18 +6,20 @@
 // https://developer.mozilla.org/en-US/docs/Web/API/HTMLTableElement/insertRow 
 //https://stackoverflow.com/questions/50046841/proper-way-to-make-api-fetch-post-with-async-await
 //https://stackoverflow.com/questions/73063874/in-js-fetch-api-promise-style-how-to-get-the-raw-body-when-the-json-function 
+//this function only really has AI generated/assisted code the implemnting of date from a example i found, it helpemd me somewhat modfiy for this ude
 async function loadInbox() {
     const tbody = document.querySelector("#items tbody");
     if (!tbody) return;
-     const res = await fetch("/api/items");
-   const items = await res.json();
+    const res = await fetch("/api/items");
+    const items = await res.json();
     tbody.innerHTML = items.map(r => `
         <tr data-id="${r.id}">
             <td>${r.name}</td>
-             <td>${r.email}</td>
+            <td>${r.email}</td>
             <td>${r.message}</td>
-            <td>${new Date(r.createdAt).toLocaleString()}</td>
-             <td><button class="del">Delete</button></td>
+            <td>${r.priority || "Low"}</td>
+            <td>${new Date(r.responseBy).toLocaleString()}</td>
+            <td><button class="del">Delete</button></td>
         </tr>
     `).join("");
 }
