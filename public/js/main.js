@@ -7,7 +7,7 @@
 //https://stackoverflow.com/questions/50046841/proper-way-to-make-api-fetch-post-with-async-await
 //https://stackoverflow.com/questions/73063874/in-js-fetch-api-promise-style-how-to-get-the-raw-body-when-the-json-function 
 //this function only really has AI generated/assisted code the implemnting of date from a example i found, it helpemd me somewhat modfiy for this ude
-async function loadInbox() {
+async function Inbox() {
     const tbody = document.querySelector("#items tbody");
     if (!tbody) return;
     const res = await fetch("/api/items");
@@ -21,36 +21,41 @@ async function loadInbox() {
             <td>${new Date(r.responseBy).toLocaleString()}</td>
             <td><button class="del">Delete</button></td>
         </tr>
-    `).join("");
+   
+        `).join("");
 }
 
 // https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
 // https://developer.mozilla.org/en-US/docs/Web/API/HTMLFormElement/submit_event
 //https://stackoverflow.com/questions/77305758/why-would-i-put-e-preventdefault-at-the-beginning-of-my-async-function
 //https://stackoverflow.com/questions/73063874/in-js-fetch-api-promise-style-how-to-get-the-raw-body-when-the-json-function 
-async function onSubmit(e) {
+async function Submit(e) {
     e.preventDefault();
-    const form =  document.querySelector("#contact-form");
+    const form = document.querySelector("#contact-form");
     if (!form) return;
     const body = JSON.stringify({
-         name: form.name.value,
+        name: form.name.value,
         email: form.email.value,
-         message: form.message.value
-    });
+        message: form.message.value,
+        priority: form.priority.value
+    }
+);
     await fetch("/api/items", {
         method: "POST",
-         headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" },
         body
-    });
+    }
+    );
     form.reset();
     loadInbox();
 }
 
 // https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener
 // https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
-async function onClick(e) {
+async function Tap(e) {
     const btn = e.target.closest(".del");
     if (!btn) return;
+
      const id = btn.closest("tr")?.dataset?.id;
     if (!id) return;
     await fetch(`/api/items/${id}`, { method: "DELETE" });
@@ -62,8 +67,9 @@ async function onClick(e) {
 // https://developer.mozilla.org/en-US/docs/Web/API/Document/DOMContentLoaded_event
 document.addEventListener("DOMContentLoaded", () => {
     const form = document.querySelector("#contact-form");
-    if (form) form.addEventListener("submit", onSubmit);
+    if (form) form.addEventListener("submit", Submit);
      const table = document.querySelector("#items");
-      if (table) table.addEventListener("click", onClick);
-    loadInbox();
-});
+      if (table) table.addEventListener("click", Tap);
+    Inbox();
+}
+);
