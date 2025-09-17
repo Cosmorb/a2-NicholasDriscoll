@@ -98,16 +98,25 @@ const Server = http.createServer(async (req, res) => {
     const raw = await readBody(req);
     let data = {};
     try { data = JSON.parse(raw); } catch {}
-    const { name, email, message } = data;
-    if (!name || !email || !message) {
-      return sendJSON(res, 400, { error: "Missing field(s)" });
-    }
+    const { name = "", email = "", message = "", priority = "Low" } = data;
+
+    if (!name || !email || !message)
+      return sendJSON(res, 400, { error: "YOU FORGOT A FIELD, FILL IT OUT" });
+
+    const slaDays = { High: 1, Mid: 3, Low: 7 };
+    const createdAt = new Date();
+    const responseBy = new Date(createdAt);
+    responseBy.setDate(createdAt.getDate() + (slaDays[priority] || slaDays.Low));
+
     const row = {
       id: "id-" + Math.random().toString(36).slice(2, 9),
       name, email, message,
-      createdAt: new Date().toISOString()
+      priority,
+      createdAt: createdAt.toISOString(),
+      responseBy: responseBy.toISOString()
     };
-    items.unshift(row);
+
+    items.push(row);
     return sendJSON(res, 201, row);
   }
   if (pathname.startsWith("/api/items/") && req.method === "DELETE") {
