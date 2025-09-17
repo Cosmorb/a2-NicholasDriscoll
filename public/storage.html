@@ -27,28 +27,30 @@
 
 <h1>Contact Me</h1>
 <form id="contact-form">
-<label>Name
-    <input id="name" type="text" required>
-</label>
+  <label>Name
+    <input id="name" name="name" type="text" required>
+  </label>
 
-<label>Email
-    <!---->
-    <input id="email" type="email" required>
-</label>
+  <label>Email
+    <input id="email" name="email" type="email" required>
+  </label>
 
-<label>Message
-    <textarea id="message" rows="3" required></textarea>
-</label>
+  <label>Message
+    <textarea id="message" name="message" rows="3" required></textarea>
+  </label>
 
-<div>
-  <strong>Priority:</strong>
-    <label><input type="radio" name="priority" value="High"> High</label>
-    <label><input type="radio" name="priority" value="Mid"> Mid</label>
-     <label><input type="radio" name="priority" value="Low" checked> Low</label>
-</div>
+  <div>
+    <strong>Priority:</strong>
+    <select name="priority" id="priority">
+      <option value="Low">Low</option>
+      <option value="Mid">Mid</option>
+      <option value="High">High</option>
+    </select>
+  </div>
 
-<button id="send" type="submit">Send</button>
+  <button id="send" type="submit">Send</button>
 </form>
+
 </section>
 
 <section class="card">
@@ -66,3 +68,7 @@
   </thead>
   <tbody></tbody>
 </table>
+</section>
+</main>
+</body>
+</html>

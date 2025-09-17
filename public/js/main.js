@@ -47,7 +47,7 @@ async function Submit(e) {
     }
     );
     form.reset();
-    loadInbox();
+    Inbox();
 }
 
 // https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener
