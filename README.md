@@ -16,7 +16,6 @@ I wasn't able to contact anyone to test it because I was very busy this week wit
 
 
 AI Use:
-For AI use, I marked everywhere where AI was heavily involved in the project. This includes anything over two lines that was filled in by the AI co-pilot for a web form. I marked most of this in main.js and improved.js, as a lot of it was me trying to use suggestions or modules provided by AI, then adjusting based on feedback. When I wasn't doing this, I considered it as purely generative AI. Outside of that, I used AI tools like the chat bot to auto-complete code based on what I was writing, and it usually provided correct suggestions. I want to note that I also used resources like Stack Overflow, Reddit, a WCS program, and other links in comments, which directed me to websites and YouTube videos that influenced my work.
 
 
 Some of the resources used:
@@ -25,3 +24,4 @@ https://www.w3schools.com/Html/html_links.asp
 https://www.w3schools.com/Html/html_forms.asp 
 https://www.w3schools.com/Html/html_youtube.asp  
 https://www.w3schools.com/Html/html5_api_whatis.asp 
+https://developer.mozilla.org/en-US/

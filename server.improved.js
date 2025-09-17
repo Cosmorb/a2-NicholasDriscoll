@@ -16,7 +16,7 @@ const PUB  = path.resolve(__dirname, "public");
 let items = [];
 
 
-// rewritten as it was too AI generated for my liking
+// rewritten as it was too AI generated/assisted for my liking
 // based off this: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
 // and  this: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Type
 // and this: https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Server-side/Node_server_without_framework 
@@ -34,12 +34,13 @@ const MIME_TYPES = {
     default: "text/plain; charset=utf-8"
 };
 
+// rewritten as it was too AI generated/assisted for my liking
 function contentType(file) {
     const ext = file.split('.').pop().toLowerCase();
     return MIME_TYPES[ext] || MIME_TYPES.default;
 }
 
-// agian rewritten as it was too AI generated for my liking
+// agian rewritten as it was too AI generated/assisted for my liking
 // based off this tjis https://expressjs.com/en/4x/api.html#req.path
 function cleaner(urlPath) {
     let file = urlPath === "/" ? "/index.html" : urlPath;
@@ -49,7 +50,7 @@ function cleaner(urlPath) {
     return abs;
 }
 
-// previous code was too AI generated for my liking, this was what was here previously
+// previous code was too AI generated/assisted for my liking, this was what was here previously
 // based off this: https://stackoverflow.com/a/45130990
 // function Blocker(urlPath) {
 //     const p = urlPath === "/" ? "/index.html" : urlPath;
@@ -67,11 +68,11 @@ function sendJSON(res, code, obj) {
     res.end(JSON.stringify(obj));
 }
 
-// Alternative way using async/await and collecting all data before resolving
+// rewritten as it was too AI generated for my liking
 async function readBody(req) {
     let data = "";
-    for await (const chunk of req) {
-        data += chunk;
+    for await (const incoming of req) {
+        data += incoming;
     }
     return data;
 }
@@ -81,12 +82,18 @@ async function readBody(req) {
 // and this: https://stackoverflow.com/a/12006679
 // based off this: https://developer.mozilla.org/en-US/docs/Learn/Server-side/Node_server_without_framework
 // and https://stackoverflow.com/a/12006679
-// curent
+// curentthe only thing that is AI generated/assisted is the overall structure of the server
+// I rewrote most of the code as it was too AI generated/assisted for my liking
+// I also added comments to explain what each part does
+// I also used some code from previous assignments
+
+//thhis establishes the server and listens on the specified port
 const Server = http.createServer(async (req, res) => {
   const { pathname } = new URL(req.url, "http://localhost"); 
   if (pathname === "/api/items" && req.method === "GET") {
     return sendJSON(res, 200, items);
   }
+//this part handles the API requests
   if (pathname === "/api/items" && req.method === "POST") {
     const raw = await readBody(req);
     let data = {};
@@ -109,12 +116,16 @@ const Server = http.createServer(async (req, res) => {
     items = items.filter(r => r.id !== rid);
     return sendJSON(res, 200, { removed: before - items.length });
   }
+
+  // this part serves static files
   const filePath = cleaner(pathname);
   if (!filePath) return send(res, 403, "Forbidden", { "Content-Type": "text/plain" });
   fs.stat(filePath, (err, stats) => {
     if (err || !stats.isFile()) {
       return send(res, 404, "Not Found", { "Content-Type": "text/plain" });
     }
+
+    //this streams the file to the response
     res.writeHead(200, { "Content-Type": contentType(filePath) });
     const stream = fs.createReadStream(filePath);
     stream.on("error", () => {
