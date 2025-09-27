@@ -41,6 +41,8 @@ if (!process.env.SESSION_SECRET) {
   console.warn("Missing SESSION_SECRET; using default is insecure in production.");
 }
 
+console.log("MONGO_URI:", JSON.stringify(process.env.MONGO_URI));
+
 try {
   await mongoose.connect(process.env.MONGO_URI);
   console.log("Connected to MongoDB");
