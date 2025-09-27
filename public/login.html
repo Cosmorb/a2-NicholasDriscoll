@@ -59,16 +59,8 @@ https://expressjs.com/en/guide/routing.html
   <main>
     <h1>Account</h1>
     
-    <!-- Info Banner for New Users -->
-    <div class="info-banner" style="background-color: #e3f2fd; border-left: 4px solid #2196f3; padding: 1rem; margin-bottom: 1.5rem; border-radius: 4px;">
-      <h3 style="margin-top: 0; color: #1976d2;">👋 New here?</h3>
-      <p style="margin-bottom: 0;">
-        <strong>No account needed!</strong> Just enter any username and password you'd like to use. 
-        If the username doesn't exist, we'll automatically create a new account for you.
-      </p>
-    </div>
 
-    <!-- Single Login Form -->
+    <!--  Login  -->
     <form id="login-form">
       <label>Username
         <input id="login-username" name="username" required>
@@ -76,7 +68,7 @@ https://expressjs.com/en/guide/routing.html
       <label>Password
         <input id="login-password" name="password" type="password" required>
       </label>
-      <!-- Single submit button -->
+      <!--  submit  -->
       <div style="text-align: right; margin-top: 0.5rem;">
         <button type="submit">Log In / Sign Up</button>
       </div>
@@ -85,7 +77,7 @@ https://expressjs.com/en/guide/routing.html
   </main>
 
   <script>
-    // Single form submission handler
+    //submission 
     document.getElementById('login-form').onsubmit = async (e) => {
       e.preventDefault();
       const errorDiv = document.getElementById('login-error');
