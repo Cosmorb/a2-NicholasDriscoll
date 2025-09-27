@@ -58,14 +58,17 @@ https://expressjs.com/en/guide/routing.html
 <body>
   <main>
     <h1>Account</h1>
+    
+    <!-- Info Banner for New Users -->
+    <div class="info-banner" style="background-color: #e3f2fd; border-left: 4px solid #2196f3; padding: 1rem; margin-bottom: 1.5rem; border-radius: 4px;">
+      <h3 style="margin-top: 0; color: #1976d2;">👋 New here?</h3>
+      <p style="margin-bottom: 0;">
+        <strong>No account needed!</strong> Just enter any username and password you'd like to use. 
+        If the username doesn't exist, we'll automatically create a new account for you.
+      </p>
+    </div>
 
-    <!-- Tabs -->
-    <nav>
-      <button id="tab-login" type="button">Login</button>
-      <button id="tab-signup" type="button">Sign Up</button>
-    </nav>
-
-    <!-- Login Form -->
+    <!-- Single Login Form -->
     <form id="login-form">
       <label>Username
         <input id="login-username" name="username" required>
@@ -73,103 +76,50 @@ https://expressjs.com/en/guide/routing.html
       <label>Password
         <input id="login-password" name="password" type="password" required>
       </label>
-      <!-- Shared button that changes text -->
+      <!-- Single submit button -->
       <div style="text-align: right; margin-top: 0.5rem;">
-        <button id="submit-btn" type="submit">Log In</button>
+        <button type="submit">Log In / Sign Up</button>
       </div>
       <p id="login-error" class="error"></p>
-    </form>
-
-    <!-- Sign Up Form -->
-    <form id="signup-form" hidden>
-      <label>Username
-        <input id="signup-username" name="username" required>
-      </label>
-      <label>Password
-        <input id="signup-password" name="password" type="password" required>
-      </label>
-      <label>Confirm Password
-        <input id="signup-confirm" name="confirm" type="password" required>
-      </label>
-      <!-- Same button, text will change -->
-      <div style="text-align: right; margin-top: 0.5rem;">
-        <button id="submit-btn-signup" type="submit">Sign Up</button>
-      </div>
-      <p id="signup-error" class="error"></p>
     </form>
   </main>
 
   <script>
-    // Switch forms and update button text
-    function show(tab) {
-      const loginForm = document.getElementById('login-form');
-      const signupForm = document.getElementById('signup-form');
-      const loginBtn = document.getElementById('submit-btn');
-      const signupBtn = document.getElementById('submit-btn-signup');
-      const loginTab = document.getElementById('tab-login');
-      const signupTab = document.getElementById('tab-signup');
-      
-      // Show/hide forms
-      loginForm.hidden = tab !== 'login';
-      signupForm.hidden = tab !== 'signup';
-      
-      // Update button text and visibility
-      if (tab === 'login') {
-        loginBtn.textContent = 'Log In';
-        loginBtn.style.backgroundColor = '#007bff';
-      } else {
-        signupBtn.textContent = 'Sign Up';
-        signupBtn.style.backgroundColor = '#28a745'; // Green for signup
-      }
-      
-      // Update tab button styles
-      loginTab.style.backgroundColor = tab === 'login' ? '#007bff' : '#f8f9fa';
-      loginTab.style.color = tab === 'login' ? 'white' : '#007bff';
-      signupTab.style.backgroundColor = tab === 'signup' ? '#007bff' : '#f8f9fa';
-      signupTab.style.color = tab === 'signup' ? 'white' : '#007bff';
-    }
-    
-    document.getElementById('tab-login').onclick = () => show('login');
-    document.getElementById('tab-signup').onclick = () => show('signup');
-
-    // Login
+    // Single form submission handler
     document.getElementById('login-form').onsubmit = async (e) => {
       e.preventDefault();
+      const errorDiv = document.getElementById('login-error');
+      errorDiv.textContent = ''; // Clear previous errors
+      
       const payload = {
         username: document.getElementById('login-username').value.trim(),
         password: document.getElementById('login-password').value
       };
-      const res = await fetch('/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type':'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json().catch(()=>({}));
-      if (!res.ok) return (document.getElementById('login-error').textContent = data.error || 'Login failed');
-      location.href = '/storage.html';
+      
+      try {
+        const res = await fetch('/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type':'application/json' },
+          body: JSON.stringify(payload)
+        });
+        
+        const data = await res.json().catch(()=>({}));
+        
+        if (res.ok) {
+          // Show success message for new accounts
+          if (data.newAccount) {
+            alert('New account created successfully! You are now logged in.');
+          }
+          // Redirect to main app
+          location.href = '/storage.html';
+        } else {
+          // Show error message
+          errorDiv.textContent = data.error || 'Login failed';
+        }
+      } catch (error) {
+        errorDiv.textContent = 'Network error. Please try again.';
+      }
     };
-
-    // Sign up
-    document.getElementById('signup-form').onsubmit = async (e) => {
-      e.preventDefault();
-      const err = document.getElementById('signup-error');
-      const u = document.getElementById('signup-username').value.trim();
-      const p = document.getElementById('signup-password').value;
-      const c = document.getElementById('signup-confirm').value;
-      if (p !== c) return err.textContent = 'Passwords do not match';
-
-      const res = await fetch('/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type':'application/json' },
-        body: JSON.stringify({ username: u, password: p })
-      });
-      const data = await res.json().catch(()=>({}));
-      if (!res.ok) return (err.textContent = data.error || 'Sign up failed');
-      location.href = '/storage.html';
-    };
-
-    // Default view
-    show('login');
   </script>
 </body>
 </html>

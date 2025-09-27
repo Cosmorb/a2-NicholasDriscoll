@@ -112,16 +112,32 @@ Aplication.use(session({
   }
 }));
 
-Aplication.use(express.static(path.join(DirecteoryName, "public")));
-// Authentication 
+// Authentication middleware
 function Authneticaor(req, res, next) {
   if (!req.session.userId) {
-
     return res.status(401).json({ error: "Authentication required. Please log in." });
-
   }
   next();
 }
+
+// Protected route for storage.html - must be authenticated
+Aplication.get("/storage.html", (req, res) => {
+  if (!req.session.userId) {
+    return res.redirect('/login.html');
+  }
+  res.sendFile(path.join(DirecteoryName, "public", "storage.html"));
+});
+
+// Serve other static files (but not storage.html since it's handled above)
+Aplication.use(express.static(path.join(DirecteoryName, "public"), {
+  index: false, // Don't serve index.html automatically
+  setHeaders: (res, path) => {
+    // Redirect to login if trying to access storage.html directly
+    if (path.endsWith('storage.html')) {
+      return false; // This won't be reached due to the route above, but good to be explicit
+    }
+  }
+}));
 // copilot help build this Application routs
 // application routes
 Aplication.post("/auth/login", async (req, res) => {
