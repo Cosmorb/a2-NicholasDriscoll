@@ -47,7 +47,6 @@ https://developer.mozilla.org/en-US/docs/Learn/Forms/User_form_validation
 https://developer.mozilla.org/en-US/docs/Learn/Forms
 https://expressjs.com/en/guide/routing.html
 -->
-
 <!doctype html>
 <html lang="en">
 <head>
@@ -74,7 +73,10 @@ https://expressjs.com/en/guide/routing.html
       <label>Password
         <input id="login-password" name="password" type="password" required>
       </label>
-      <button type="submit">Log In</button>
+      <!-- Button aligned to right -->
+      <div style="text-align: right; margin-top: 0.5rem;">
+        <button id="login-btn" type="submit">Log In</button>
+      </div>
       <p id="login-error" class="error"></p>
     </form>
 
@@ -89,30 +91,20 @@ https://expressjs.com/en/guide/routing.html
       <label>Confirm Password
         <input id="signup-confirm" name="confirm" type="password" required>
       </label>
-      <button type="submit">Create Account</button>
+      <!-- Button aligned to right -->
+      <div style="text-align: right; margin-top: 0.5rem;">
+        <button id="signup-btn" type="submit">Sign Up</button>
+      </div>
       <p id="signup-error" class="error"></p>
     </form>
   </main>
 
   <script>
-    // Tab switch
+    // Switch forms
     function show(tab) {
-      const loginForm = document.getElementById('login-form');
-      const signupForm = document.getElementById('signup-form');
-      const loginTab = document.getElementById('tab-login');
-      const signupTab = document.getElementById('tab-signup');
-      
-      // Show/hide forms
-      loginForm.hidden = tab !== 'login';
-      signupForm.hidden = tab !== 'signup';
-      
-      // Update tab button styles to show active state
-      loginTab.style.backgroundColor = tab === 'login' ? '#007bff' : '#f8f9fa';
-      loginTab.style.color = tab === 'login' ? 'white' : '#007bff';
-      signupTab.style.backgroundColor = tab === 'signup' ? '#007bff' : '#f8f9fa';
-      signupTab.style.color = tab === 'signup' ? 'white' : '#007bff';
+      document.getElementById('login-form').hidden = tab !== 'login';
+      document.getElementById('signup-form').hidden = tab !== 'signup';
     }
-    
     document.getElementById('tab-login').onclick = () => show('login');
     document.getElementById('tab-signup').onclick = () => show('signup');
 
@@ -152,6 +144,7 @@ https://expressjs.com/en/guide/routing.html
       location.href = '/storage.html';
     };
 
+    // Default view
     show('login');
   </script>
 </body>
