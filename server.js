@@ -30,7 +30,7 @@ const FileName = fileURLToPath(import.meta.url);
 const DirecteoryName = path.dirname(FileName);
 
 const Aplication = express();
-const Port = process.env.Port || 3000;
+const Port = process.env.PORT || 3000;
 
 if (!process.env.MONGO_URI) {
   console.error("Missing MONGO_URI env var");
@@ -85,6 +85,10 @@ Aplication.use(session({
   secret: process.env.SESSION_SECRET || "secret",
   resave: false,
   saveUninitialized: false,
+  store: MongoStore.create({
+    mongoUrl: process.env.MONGO_URI,
+    touchAfter: 24 * 3600 // lazy session update
+  }),
   cookie: {
     secure: process.env.NODE_ENV === "production",
     httpOnly: true,
