@@ -23,7 +23,6 @@ So, for AI use, compared to what I submitted earlier, this is much less because 
 
 
 
-AI Use:
 
 
 Some of the resources used:
@@ -33,3 +32,5 @@ https://www.w3schools.com/Html/html_forms.asp
 https://www.w3schools.com/Html/html_youtube.asp  
 https://www.w3schools.com/Html/html5_api_whatis.asp 
 https://developer.mozilla.org/en-US/
+//https://docs.npmjs.com/cli/v10/configuring-npm/package-json
+// built of of this article, tho helemt oand moregan were sggjust by copolito for secuity and logging, not rerllay needed for assiewmnt but paln on y=usinbg wsebsite after term for perosnal use so puttihem them in for now 
