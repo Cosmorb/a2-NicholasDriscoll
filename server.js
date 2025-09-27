@@ -155,6 +155,32 @@ Aplication.post("/auth/logout", (req, res) => {
   });
 });
 
+//api for login
+
+//https://expressjs.com/en/guide/routing.html
+//https://mongoosejs.com/docs/models.html
+//https://github.com/dcodeIO/bcrypt.js
+//https://github.com/expressjs/session
+
+Aplication.post("/auth/register", async (req, res) => {
+  try {
+    const { username = "", password = "" } = req.body || {};
+    if (!username || !password) {
+      return res.status(400).json({ error: "Username and password are required" });
+    }
+
+    const existing = await User.findOne({ username });
+    if (existing) return res.status(409).json({ error: "Username already taken" });
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    const user = await User.create({ username, passwordHash });
+    req.session.userId = user._id.toString();
+    res.json({ ok: true, newAccount: true, message: "Account created", user: { id: user._id, username } });
+  } catch (err) {
+    console.error("Register error:", err);
+    res.status(500).json({ error: "Server error during registration" });
+  }
+});
 
 // API routes for items
 
@@ -231,11 +257,12 @@ Aplication.get("/", (_req, res) => {
 });
 
 Aplication.get("/login", (_req, res) => {
-
-
   res.sendFile(path.join(DirecteoryName, "public", "login.html"));
 });
 
+Aplication.get("/login.html", (_req, res) => {
+  res.sendFile(path.join(DirecteoryName, "public", "login.html"));
+});
 
 Aplication.use((req, res) => {
 
