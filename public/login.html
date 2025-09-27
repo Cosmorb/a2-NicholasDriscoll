@@ -1,4 +1,4 @@
-<!doctype html>
+<!-- <!doctype html>
 <html>
 <head>
   <meta charset="utf-8">
@@ -37,6 +37,70 @@
       }
     }
     document.querySelector('#login-form').addEventListener('submit', login);
+  </script>
+</body>
+</html> -->
+
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <main>
+    <h1>Login</h1>
+
+    <form id="login-form">
+      <label>
+        Username
+        <input id="username" name="username" type="text" required>
+      </label>
+      <label>
+        Password
+        <input id="password" name="password" type="password" required>
+      </label>
+      <button type="submit">Log In</button>
+      <p id="error" class="error"></p>
+    </form>
+  </main>
+
+  <script>
+    const form = document.querySelector('#login-form');
+    const errorBox = document.querySelector('#error');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorBox.textContent = '';
+
+      const payload = {
+        username: document.querySelector('#username').value.trim(),
+        password: document.querySelector('#password').value
+      };
+
+      try {
+        const res = await fetch('/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) {
+          errorBox.textContent = data.error || 'Login failed';
+          return;
+        }
+
+        // success: go to storage page
+        location.href = '/storage.html';
+      } catch (err) {
+        errorBox.textContent = 'Network error';
+      }
+    });
   </script>
 </body>
 </html>
