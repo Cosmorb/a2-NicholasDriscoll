@@ -64,11 +64,24 @@ const User = mongoose.model("User", UserSchematic);
 
 // Item model
 const ItemSchematic = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
-  name: { type: String, required: true, trim: true },
-  email:{ type: String, required: true, trim: true },
-  message:{ type: String, required: true },
-  createdAt: { type: Date, default: Date.now }
+  userId:   { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
+  name:     { type: String, required: true, trim: true },
+  email:    { type: String, required: true, trim: true },
+  message:  { type: String, required: true },
+  createdAt:{ type: Date, default: Date.now },
+  updatedAt:{ type: Date } // NEW - tracks when record was last modified
+});
+
+// Automatically set updatedAt before saving
+// https://mongoosejs.com/docs/middleware.html#pre
+ItemSchematic.pre('save', function(next) {
+  this.updatedAt = Date.now();
+  next();
+});
+
+ItemSchematic.pre(['updateOne', 'findOneAndUpdate'], function(next) {
+  this.set({ updatedAt: Date.now() });
+  next();
 });
 
 //
