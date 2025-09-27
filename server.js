@@ -51,7 +51,6 @@ try {
   process.exit(1);
 }
 
-// define schemas and models
 const UserSchematic = new mongoose.Schema({
   username: { type: String, unique: true, required: true, trim: true },
   passwordHash: { type: String, required: true }
@@ -59,32 +58,35 @@ const UserSchematic = new mongoose.Schema({
 const User = mongoose.model("User", UserSchematic);
 
 const ItemSchematic = new mongoose.Schema({
-  userId:   { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
-  name:     { type: String, required: true, trim: true },
-  email:    { type: String, required: true, trim: true },
-  message:  { type: String, required: true },
-  createdAt:{ type: Date, default: Date.now },
-  updatedAt:{ type: Date }
+  userId:    { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
+  name:      { type: String, required: true, trim: true },
+  email:     { type: String, required: true, trim: true },
+  message:   { type: String, required: true },
+
+  // NEW: A2-style fields
+  priority:  { type: String, enum: ["Low","Mid","High"], default: "Low" },
+  responseBy:{ type: Date },   // derived from createdAt + priority
+
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date }
 });
 
-// updatedAt middleware
+
 ItemSchematic.pre("save", function(next) { this.updatedAt = Date.now(); next(); });
 ItemSchematic.pre(["updateOne","findOneAndUpdate"], function(next) { this.set({ updatedAt: Date.now() }); next(); });
 
 const Item = mongoose.model("Item", ItemSchematic);
 
-// middleware
 Aplication.use(helmet());
 Aplication.use(express.json());
 
-// FIX: enable request logging (you imported morgan)
 Aplication.use(morgan("dev"));
 
 if (process.env.NODE_ENV === "production") {
   Aplication.set("trust proxy", 1);
 }
 
-// sessions (persisted in Mongo)
+// sessions 
 Aplication.use(session({
   secret: process.env.SESSION_SECRET || "secret",
   resave: false,
@@ -101,19 +103,21 @@ Aplication.use(session({
   }
 }));
 
-// auth middleware
 function Authneticaor(req, res, next) {
   if (!req.session.userId) return res.status(401).json({ error: "Authentication required. Please log in." });
   next();
 }
 
-// protect storage page
+function deriveResponseBy(priority = "Low", createdAt = new Date()) {
+  const days = priority === "High" ? 1 : priority === "Mid" ? 3 : 7;
+  return new Date(new Date(createdAt).getTime() + days * 86400000);
+}
+
 Aplication.get("/storage.html", (req, res) => {
   if (!req.session.userId) return res.redirect("/login.html");
   res.sendFile(path.join(DirecteoryName, "public", "storage.html"));
 });
 
-// static files (keep simple; storage.html handled above)
 Aplication.use(express.static(path.join(DirecteoryName, "public"), { index: false }));
 
 // auth routes
@@ -169,7 +173,7 @@ Aplication.post("/auth/logout", (req, res) => {
   });
 });
 
-// items API (user-scoped)
+// items API 
 Aplication.get("/api/items", Authneticaor, async (req, res) => {
   try {
     const items = await Item.find({ userId: req.session.userId }).sort({ createdAt: -1 });
@@ -182,10 +186,20 @@ Aplication.get("/api/items", Authneticaor, async (req, res) => {
 
 Aplication.post("/api/items", Authneticaor, async (req, res) => {
   try {
-    const { name = "", email = "", message = "" } = req.body || {};
-    if (!name || !email || !message) return res.status(400).json({ error: "Name, email, and message are required" });
+    const { name = "", email = "", message = "", priority = "Low" } = req.body || {};
+    if (!name || !email || !message) {
+      return res.status(400).json({ error: "Name, email, and message are required" });
+    }
+    const createdAt = new Date();
+    const responseBy = deriveResponseBy(priority, createdAt);
 
-    const doc = await Item.create({ userId: req.session.userId, name, email, message });
+    const doc = await Item.create({
+      userId: req.session.userId,
+      name, email, message,
+      priority,
+      responseBy,
+      createdAt
+    });
     res.status(201).json(doc);
   } catch (err) {
     console.error("Create item error:", err);
@@ -196,24 +210,35 @@ Aplication.post("/api/items", Authneticaor, async (req, res) => {
 Aplication.put("/api/items/:id", Authneticaor, async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, email, message } = req.body || {};
+    const { name, email, message, priority } = req.body || {};
+
+    // Load existing to know createdAt/priority when recomputing
+    const existing = await Item.findOne({ _id: id, userId: req.session.userId });
+    if (!existing) return res.status(404).json({ error: "Item not found or access denied" });
+
     const patch = {};
     if (name != null && name !== "") patch.name = name;
     if (email != null && email !== "") patch.email = email;
     if (message != null && message !== "") patch.message = message;
+    if (priority != null && priority !== "") patch.priority = priority;
+
+    // Recompute responseBy if priority changed
+    if (patch.priority) {
+      patch.responseBy = deriveResponseBy(patch.priority, existing.createdAt);
+    }
 
     const doc = await Item.findOneAndUpdate(
       { _id: id, userId: req.session.userId },
       { $set: patch },
       { new: true }
     );
-    if (!doc) return res.status(404).json({ error: "Item not found or access denied" });
     res.json(doc);
   } catch (err) {
     console.error("Update item error:", err);
     res.status(500).json({ error: "Error updating item" });
   }
 });
+
 
 Aplication.delete("/api/items/:id", Authneticaor, async (req, res) => {
   try {
