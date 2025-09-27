@@ -60,7 +60,6 @@ async function onTableClick(e){
   }
 
   if (e.target.classList.contains('edit')) {
-    // Minimal editing: ask for new message; optional: also ask to change priority
     const message = prompt('New message (leave blank to keep current):');
     const changePriority = confirm('Change priority too? Click OK for Yes, Cancel for No.');
     let priority;
