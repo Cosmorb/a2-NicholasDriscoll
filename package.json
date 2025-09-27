@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "description": "CS4241 Assignment 3",
   "author": "Nicholas Driscoll",
+  "type": "module",
+  "engines": { "node": ">=18" },
   "scripts": {
-
     "start": "node server.js"
   },
   "dependencies": {

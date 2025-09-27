@@ -19,6 +19,8 @@ import dotenv from "dotenv";
 import helmet from "helmet";
 import path from "path";
 import { fileURLToPath } from "url";
+import MongoStore from "connect-mongo";
+import morgan from "morgan";
 
 
 // basic path confqiguration 
