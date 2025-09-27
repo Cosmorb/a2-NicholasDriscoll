@@ -97,9 +97,22 @@ https://expressjs.com/en/guide/routing.html
   <script>
     // Tab switch
     function show(tab) {
-      document.getElementById('login-form').hidden = tab !== 'login';
-      document.getElementById('signup-form').hidden = tab !== 'signup';
+      const loginForm = document.getElementById('login-form');
+      const signupForm = document.getElementById('signup-form');
+      const loginTab = document.getElementById('tab-login');
+      const signupTab = document.getElementById('tab-signup');
+      
+      // Show/hide forms
+      loginForm.hidden = tab !== 'login';
+      signupForm.hidden = tab !== 'signup';
+      
+      // Update tab button styles to show active state
+      loginTab.style.backgroundColor = tab === 'login' ? '#007bff' : '#f8f9fa';
+      loginTab.style.color = tab === 'login' ? 'white' : '#007bff';
+      signupTab.style.backgroundColor = tab === 'signup' ? '#007bff' : '#f8f9fa';
+      signupTab.style.color = tab === 'signup' ? 'white' : '#007bff';
     }
+    
     document.getElementById('tab-login').onclick = () => show('login');
     document.getElementById('tab-signup').onclick = () => show('signup');
 
