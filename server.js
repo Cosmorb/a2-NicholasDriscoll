@@ -26,7 +26,6 @@ import morgan from "morgan";
 
 dotenv.config();
 
-// basic path configuration
 const FileName = fileURLToPath(import.meta.url);
 const DirecteoryName = path.dirname(FileName);
 
@@ -114,7 +113,12 @@ function deriveResponseBy(priority = "Low", createdAt = new Date()) {
 }
 
 Aplication.get("/storage.html", (req, res) => {
-  if (!req.session.userId) return res.redirect("/login.html");
+  console.log('Storage.html requested, session userId:', req.session.userId);
+  if (!req.session.userId) {
+    console.log('No session, redirecting to login');
+    return res.redirect("/login.html");
+  }
+  console.log('User authenticated, serving storage.html');
   res.sendFile(path.join(DirecteoryName, "public", "storage.html"));
 });
 
@@ -122,15 +126,18 @@ Aplication.use(express.static(path.join(DirecteoryName, "public"), { index: fals
 
 // auth routes
 Aplication.post("/auth/login", async (req, res) => {
+  console.log('Login attempt:', req.body);
   try {
     const { username = "", password = "" } = req.body || {};
     if (!username || !password) return res.status(400).json({ error: "Username and password are required" });
 
     let user = await User.findOne({ username });
     if (!user) {
+      console.log('Creating new user:', username);
       const passwordHash = await bcrypt.hash(password, 10);
       user = await User.create({ username, passwordHash });
       req.session.userId = user._id.toString();
+      console.log('New user created, session set:', req.session.userId);
       return res.json({ ok: true, newAccount: true, message: "New account created", user: { id: user._id, username } });
     }
 
@@ -138,6 +145,7 @@ Aplication.post("/auth/login", async (req, res) => {
     if (!ok) return res.status(401).json({ error: "Incorrect password" });
 
     req.session.userId = user._id.toString();
+    console.log('User logged in, session set:', req.session.userId);
     res.json({ ok: true, newAccount: false, message: "Login successful", user: { id: user._id, username } });
   } catch (err) {
     console.error("Login error:", err);
@@ -212,7 +220,6 @@ Aplication.put("/api/items/:id", Authneticaor, async (req, res) => {
     const { id } = req.params;
     const { name, email, message, priority } = req.body || {};
 
-    // Load existing to know createdAt/priority when recomputing
     const existing = await Item.findOne({ _id: id, userId: req.session.userId });
     if (!existing) return res.status(404).json({ error: "Item not found or access denied" });
 
@@ -222,7 +229,6 @@ Aplication.put("/api/items/:id", Authneticaor, async (req, res) => {
     if (message != null && message !== "") patch.message = message;
     if (priority != null && priority !== "") patch.priority = priority;
 
-    // Recompute responseBy if priority changed
     if (patch.priority) {
       patch.responseBy = deriveResponseBy(patch.priority, existing.createdAt);
     }
@@ -252,7 +258,6 @@ Aplication.delete("/api/items/:id", Authneticaor, async (req, res) => {
   }
 });
 
-// pages
 Aplication.get("/", (_req, res) => {
   res.sendFile(path.join(DirecteoryName, "public", "index.html"));
 });
@@ -263,7 +268,6 @@ Aplication.get("/login.html", (_req, res) => {
   res.sendFile(path.join(DirecteoryName, "public", "login.html"));
 });
 
-// errors
 Aplication.use((req, res) => {
   res.status(404).json({ error: "Route not found" });
 });

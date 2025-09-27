@@ -102,7 +102,18 @@ https://expressjs.com/en/guide/routing.html
             alert('New account created successfully! You are now logged in.');
           }
           console.log('Login successful, redirecting to storage.html');
-          window.location.href = 'storage.html';
+          console.log('Response data:', data);
+          
+          // Use setTimeout to ensure any alerts are processed first
+          setTimeout(() => {
+            console.log('Attempting redirect to /storage.html');
+            try {
+              window.location.replace('/storage.html');
+            } catch (err) {
+              console.error('Redirect failed, trying alternative method:', err);
+              window.location.href = '/storage.html';
+            }
+          }, 200);
         } else {
           errorDiv.textContent = data.error || 'Login failed';
         }
