@@ -98,17 +98,16 @@ https://expressjs.com/en/guide/routing.html
         const data = await res.json().catch(()=>({}));
         
         if (res.ok) {
-          // Show success message for new accounts
           if (data.newAccount) {
             alert('New account created successfully! You are now logged in.');
           }
-          // Redirect to main app
-          location.href = '/storage.html';
+          console.log('Login successful, redirecting to storage.html');
+          window.location.href = 'storage.html';
         } else {
-          // Show error message
           errorDiv.textContent = data.error || 'Login failed';
         }
       } catch (error) {
+        console.error('Login request failed:', error);
         errorDiv.textContent = 'Network error. Please try again.';
       }
     };

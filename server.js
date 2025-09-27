@@ -10,6 +10,8 @@
 // https://expressjs.com/en/api.html#express.json
 // https://expressjs.com/en/api.html#res.sendFile
 // https://www.npmjs.com/package/helmet
+// https://www.npmjs.com/package/morgan
+// https://www.npmjs.com/package/connect-mongo
 
 import express from "express";
 import session from "express-session";
@@ -22,10 +24,9 @@ import { fileURLToPath } from "url";
 import MongoStore from "connect-mongo";
 import morgan from "morgan";
 
-
-// basic path confqiguration 
 dotenv.config();
 
+// basic path configuration
 const FileName = fileURLToPath(import.meta.url);
 const DirecteoryName = path.dirname(FileName);
 
@@ -36,12 +37,11 @@ if (!process.env.MONGO_URI) {
   console.error("Missing MONGO_URI env var");
   process.exit(1);
 }
-
 if (!process.env.SESSION_SECRET) {
   console.warn("Missing SESSION_SECRET; using default is insecure in production.");
 }
 
-console.log("MONGO_URI:", JSON.stringify(process.env.MONGO_URI));
+
 
 try {
   await mongoose.connect(process.env.MONGO_URI);
@@ -51,58 +51,47 @@ try {
   process.exit(1);
 }
 
-// define  schemas and models
+// define schemas and models
 const UserSchematic = new mongoose.Schema({
   username: { type: String, unique: true, required: true, trim: true },
   passwordHash: { type: String, required: true }
 });
-
-//  User mdel
 const User = mongoose.model("User", UserSchematic);
 
-
-
-// Item model
 const ItemSchematic = new mongoose.Schema({
   userId:   { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
   name:     { type: String, required: true, trim: true },
   email:    { type: String, required: true, trim: true },
   message:  { type: String, required: true },
   createdAt:{ type: Date, default: Date.now },
-  updatedAt:{ type: Date } // NEW - tracks when record was last modified
+  updatedAt:{ type: Date }
 });
 
-// Automatically set updatedAt before saving
-// https://mongoosejs.com/docs/middleware.html#pre
-ItemSchematic.pre('save', function(next) {
-  this.updatedAt = Date.now();
-  next();
-});
+// updatedAt middleware
+ItemSchematic.pre("save", function(next) { this.updatedAt = Date.now(); next(); });
+ItemSchematic.pre(["updateOne","findOneAndUpdate"], function(next) { this.set({ updatedAt: Date.now() }); next(); });
 
-ItemSchematic.pre(['updateOne', 'findOneAndUpdate'], function(next) {
-  this.set({ updatedAt: Date.now() });
-  next();
-});
-
-//
 const Item = mongoose.model("Item", ItemSchematic);
 
+// middleware
 Aplication.use(helmet());
 Aplication.use(express.json());
 
+// FIX: enable request logging (you imported morgan)
+Aplication.use(morgan("dev"));
+
 if (process.env.NODE_ENV === "production") {
-
   Aplication.set("trust proxy", 1);
-
 }
-// session 
+
+// sessions (persisted in Mongo)
 Aplication.use(session({
   secret: process.env.SESSION_SECRET || "secret",
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({
     mongoUrl: process.env.MONGO_URI,
-    touchAfter: 24 * 3600 // lazy session update
+    touchAfter: 24 * 3600
   }),
   cookie: {
     secure: process.env.NODE_ENV === "production",
@@ -112,34 +101,22 @@ Aplication.use(session({
   }
 }));
 
-// Authentication middleware
+// auth middleware
 function Authneticaor(req, res, next) {
-  if (!req.session.userId) {
-    return res.status(401).json({ error: "Authentication required. Please log in." });
-  }
+  if (!req.session.userId) return res.status(401).json({ error: "Authentication required. Please log in." });
   next();
 }
 
-// Protected route for storage.html - must be authenticated
+// protect storage page
 Aplication.get("/storage.html", (req, res) => {
-  if (!req.session.userId) {
-    return res.redirect('/login.html');
-  }
+  if (!req.session.userId) return res.redirect("/login.html");
   res.sendFile(path.join(DirecteoryName, "public", "storage.html"));
 });
 
-// Serve other static files (but not storage.html since it's handled above)
-Aplication.use(express.static(path.join(DirecteoryName, "public"), {
-  index: false, // Don't serve index.html automatically
-  setHeaders: (res, path) => {
-    // Redirect to login if trying to access storage.html directly
-    if (path.endsWith('storage.html')) {
-      return false; // This won't be reached due to the route above, but good to be explicit
-    }
-  }
-}));
-// copilot help build this Application routs
-// application routes
+// static files (keep simple; storage.html handled above)
+Aplication.use(express.static(path.join(DirecteoryName, "public"), { index: false }));
+
+// auth routes
 Aplication.post("/auth/login", async (req, res) => {
   try {
     const { username = "", password = "" } = req.body || {};
@@ -147,56 +124,27 @@ Aplication.post("/auth/login", async (req, res) => {
 
     let user = await User.findOne({ username });
     if (!user) {
-
       const passwordHash = await bcrypt.hash(password, 10);
       user = await User.create({ username, passwordHash });
       req.session.userId = user._id.toString();
       return res.json({ ok: true, newAccount: true, message: "New account created", user: { id: user._id, username } });
-
     }
 
-  // 
     const ok = await bcrypt.compare(password, user.passwordHash);
     if (!ok) return res.status(401).json({ error: "Incorrect password" });
 
     req.session.userId = user._id.toString();
     res.json({ ok: true, newAccount: false, message: "Login successful", user: { id: user._id, username } });
   } catch (err) {
-
     console.error("Login error:", err);
     res.status(500).json({ error: "Server error during login" });
-
   }
 });
-
-
-// API for logout
-//
-Aplication.post("/auth/logout", (req, res) => {
-  req.session.destroy(err => {
-    if (err) {
-
-      console.error("Logout error:", err);
-      return res.status(500).json({ error: "Could not log out" });
-
-    }
-    res.json({ ok: true, message: "Logged out" });
-  });
-});
-
-//api for login
-
-//https://expressjs.com/en/guide/routing.html
-//https://mongoosejs.com/docs/models.html
-//https://github.com/dcodeIO/bcrypt.js
-//https://github.com/expressjs/session
 
 Aplication.post("/auth/register", async (req, res) => {
   try {
     const { username = "", password = "" } = req.body || {};
-    if (!username || !password) {
-      return res.status(400).json({ error: "Username and password are required" });
-    }
+    if (!username || !password) return res.status(400).json({ error: "Username and password are required" });
 
     const existing = await User.findOne({ username });
     if (existing) return res.status(409).json({ error: "Username already taken" });
@@ -211,9 +159,17 @@ Aplication.post("/auth/register", async (req, res) => {
   }
 });
 
-// API routes for items
+Aplication.post("/auth/logout", (req, res) => {
+  req.session.destroy(err => {
+    if (err) {
+      console.error("Logout error:", err);
+      return res.status(500).json({ error: "Could not log out" });
+    }
+    res.json({ ok: true, message: "Logged out" });
+  });
+});
 
-//
+// items API (user-scoped)
 Aplication.get("/api/items", Authneticaor, async (req, res) => {
   try {
     const items = await Item.find({ userId: req.session.userId }).sort({ createdAt: -1 });
@@ -224,9 +180,6 @@ Aplication.get("/api/items", Authneticaor, async (req, res) => {
   }
 });
 
-
-//
-//api to create item
 Aplication.post("/api/items", Authneticaor, async (req, res) => {
   try {
     const { name = "", email = "", message = "" } = req.body || {};
@@ -234,16 +187,12 @@ Aplication.post("/api/items", Authneticaor, async (req, res) => {
 
     const doc = await Item.create({ userId: req.session.userId, name, email, message });
     res.status(201).json(doc);
-
   } catch (err) {
     console.error("Create item error:", err);
     res.status(500).json({ error: "Error creating item" });
   }
 });
 
-// API to update item
-
-//
 Aplication.put("/api/items/:id", Authneticaor, async (req, res) => {
   try {
     const { id } = req.params;
@@ -266,8 +215,6 @@ Aplication.put("/api/items/:id", Authneticaor, async (req, res) => {
   }
 });
 
-//API to delete item
-//
 Aplication.delete("/api/items/:id", Authneticaor, async (req, res) => {
   try {
     const { id } = req.params;
@@ -280,34 +227,28 @@ Aplication.delete("/api/items/:id", Authneticaor, async (req, res) => {
   }
 });
 
+// pages
 Aplication.get("/", (_req, res) => {
-
   res.sendFile(path.join(DirecteoryName, "public", "index.html"));
 });
-
 Aplication.get("/login", (_req, res) => {
   res.sendFile(path.join(DirecteoryName, "public", "login.html"));
 });
-
 Aplication.get("/login.html", (_req, res) => {
   res.sendFile(path.join(DirecteoryName, "public", "login.html"));
 });
 
+// errors
 Aplication.use((req, res) => {
-
   res.status(404).json({ error: "Route not found" });
 });
-
 Aplication.use((err, _req, res, _next) => {
   console.error("Unhandled error:", err);
-
   res.status(500).json({ error: "Something went wrong" });
-
 });
 
+// start
 Aplication.listen(Port, () => {
-
   console.log(`Server running on port ${Port}`);
   console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
-
 });
